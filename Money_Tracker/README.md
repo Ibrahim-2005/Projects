@@ -31,23 +31,34 @@ It helps you record income, expenses, transfers, and view insightful summaries �
 
 ---
 
-## 🗂 Folder Structure
+## ⚙️ Installation Steps
 
-Money_Tracker/
-│
-├── Money_Tracker.py # Main script (run this)
-├── Money Tracker.xlsx # Auto-created Excel log
-├── Accounts.json # Stores accounts and balances
-├── Income_category.json # Income categories
-├── Expense_category.json # Expense categories
-└── requirements.txt # Dependencies
+**Follow these steps carefully to set up and run the Money Tracker project on your system 👇**
 
----
+1️⃣ Create a Folder
+    Create a new folder anywhere on your computer named:
+    **Money_Tracker**
 
-## ⚙️ Installation
+2️⃣ Open Terminal or Git Bash
+    Open Git Bash or VS Code Terminal inside that folder.
 
-1. **Clone or download** the project folder.  
-2. Make sure you have Python **3.10+** installed.  
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
+3️⃣ Clone the Repository
+    Now clone your main Projects repository:
+    **git clone https://github.com/Ibrahim-2005/Projects.git**
+
+4️⃣ Navigate to the Project Folder
+    **cd Projects/Money_Tracker**
+
+5️⃣ Install Required Packages
+    Make sure you have Python 3.10+ installed.
+    Then install dependencies using:
+
+    **pip install -r requirements.txt**
+
+    If you get a “not writable” error, run:
+
+    **pip install --user -r requirements.txt**
+
+6️⃣ Run the Application
+    Start the Money Tracker by:
+    **python main.py**
