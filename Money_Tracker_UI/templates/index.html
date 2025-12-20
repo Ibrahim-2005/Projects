@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+    {% block content %}
+    <h1>MONEY MANAGER</h1>
+    <form method="POST">
+        <input type="number" name="amount" placeholder="AMOUNT">
+        <select name="transaction-type">
+            <option value="Income">INCOME</option>
+            <option value="Expense">EXPENSE</option>
+        </select>
+        <button name="submit">SUBMIT</button>
+    </form>
+    <h2>TRANSACTIONS</h2>
+    <ul>
+        {% for t in transactions %}
+        <li>{{t["amount"]}} - {{t["type"]}}
+            <a href="{{url_for('delete_trans',id=t['id'])}}"> DELETE</a>
+        </li>
+        {% else %}
+        <p>NO TRANSACTIONS YET</p>
+        {% endfor %}
+    </ul>
+
+
+    {% endblock %}
