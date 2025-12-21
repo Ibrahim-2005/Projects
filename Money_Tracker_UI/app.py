@@ -3,7 +3,7 @@ import sqlite3
 from werkzeug.security import generate_password_hash,check_password_hash
 
 app=Flask(__name__)
-
+app.secret_key="super-secret-key"
 
 def get_db():
     conn=sqlite3.connect("money_manager.db")
@@ -35,6 +35,8 @@ init_db()
 
 @app.route("/",methods=["GET","POST"])
 def home():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
     if request.method=="POST":
         amount=request.form.get("amount")
         ttype=request.form.get("transaction-type")
@@ -64,8 +66,30 @@ def register():
             conn.close()
             return "Username already exists"
         conn.close()
-        redirect(url_for("home"))
+        return redirect(url_for("home"))
     return render_template("register.html")
+
+@app.route("/login",methods=["GET","POST"])
+def login():
+    if request.method=="POST":
+        username=request.form.get("username")
+        password=request.form.get("password")
+
+        conn=get_db()
+        conn.execute("SELECT * FROM users WHERE username=?",(username,)).fetchone()
+        conn.close()
+
+        if username and check_password_hash(username["password"],password):
+            session["user_id"]=username["id"]
+
+            return redirect(url_for("home"))
+        return "INVALID USERNAME AND PASSWORD"
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.pop("user_id", None)
+    return redirect(url_for("login"))
 
 @app.route("/delete/<int:id>")
 def delete_trans(id):

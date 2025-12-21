@@ -8,8 +8,18 @@
 <body>
     <nav>
         <a href="{{url_for('home')}}">HOME</a>
-        <a href="{{url_for('register')}}">REGISTER</a>
+        {% if session.get('user_id') %}
+        
+            <a href="{{ url_for('logout') }}">Logout</a>
+
+        {% else %}
+
+            <a href="{{ url_for('login') }}">Login</a> |
+            <a href="{{ url_for('register') }}">Register</a>
+    
+        {% endif %}
     </nav>
+
     {% block content %}
     {% endblock %}
 </body>
