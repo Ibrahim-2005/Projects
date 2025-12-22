@@ -4,24 +4,37 @@
 
     {% block content %}
     <h1>MONEY MANAGER</h1>
+    <h4>Welcome {{username}}</h4>
     <form method="POST">
-        <input type="number" name="amount" placeholder="AMOUNT">
-        <select name="transaction-type">
+        <input type="date" name="date"></form><br>
+        <input type="number" name="amount" placeholder="AMOUNT"><br>
+        <select name="transaction-type" required>
             <option value="Income">INCOME</option>
             <option value="Expense">EXPENSE</option>
-        </select>
+        </select><br>
+        <select name="category_id" required onchange="if (this.value==='add') window.location.href='{{ url_for('categories')}}'">
+            <option value="">Select Category</option>
+            <option value="add">➕ Add new category</option>
+            {% for c in categories %}
+            <option value="{{ c['id'] }}">{{ c['name'] }}</option>
+            {% endfor %}
+        </select><br>
         <button name="submit">SUBMIT</button>
     </form>
     <h2>TRANSACTIONS</h2>
     <ul>
+        {%if transactions %}
+        <p>AMOUNT   |   TYPE    |   CATEGORY</p>
         {% for t in transactions %}
-        <li>{{t["amount"]}} - {{t["type"]}}
-            <a href="{{url_for('delete_trans',id=t['id'])}}"> DELETE</a>
-        </li>
-        {% else %}
-        <p>NO TRANSACTIONS YET</p>
+            <li>
+                {{ t["date"] }} - {{ t["amount"] }} - {{ t["type"] }} ({{ t["category"] }})
+            </li>
         {% endfor %}
+        {% else %}
+            <li>No transactions yet</li>
+        {% endif %}
     </ul>
+
 
 
     {% endblock %}

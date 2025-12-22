@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Your Categories</h2>
+
+<form method="POST">
+    <input type="text" name="name" placeholder="Category name" required>
+    <button type="submit">Submit</button>
+</form>
+<ul>
+    {% for c in categories %}
+    <li>{{ c["name"] }}</li>
+
+    {% else %}
+    <li>No Categories exist</li>
+    {% endfor %}
+
+</ul>
+
+{% endblock %}

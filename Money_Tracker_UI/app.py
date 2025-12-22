@@ -1,6 +1,7 @@
 from flask import Flask,render_template,request,url_for,redirect,session
 import sqlite3
 from werkzeug.security import generate_password_hash,check_password_hash
+from datetime import date
 
 app=Flask(__name__)
 app.secret_key="super-secret-key"
@@ -20,7 +21,10 @@ def init_db():
                         user_id INTEGER NOT NULL,
                         amount INTEGER,
                         type TEXT,
-                        FOREIGN KEY (user_id) REFERENCES users(id)
+                        category_id INTEGER NOT NULL,
+                        date TEXT NOT NULL,
+                        FOREIGN KEY (user_id) REFERENCES users(id),
+                        FOREIGN KEY (category_id) REFERENCES categories(id)
                     )
                 """)
     conn.execute("""
@@ -37,8 +41,8 @@ def init_db():
                     (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL,
-                        password TEXT NOT NULL,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        user_id INTEGER NOT NULL,
+                        FOREIGN KEY (user_id) REFERENCES users(id)
                     )
                 """)
     conn.commit()
@@ -52,16 +56,33 @@ def home():
     if request.method=="POST":
         amount=request.form.get("amount")
         ttype=request.form.get("transaction-type")
+        category_id=request.form.get("category_id")
+        selected_date=request.form.get("date")
+        if not selected_date:
+            selected_date = date.today().isoformat()
         conn=get_db()
-        conn.execute("INSERT INTO transactions (user_id,amount,type) VALUES (?,?,?)",(session["user_id"],amount,ttype))
+        conn.execute("INSERT INTO transactions (user_id,amount,type,category_id,date) VALUES (?,?,?,?,?)",(session["user_id"],amount,ttype,category_id,selected_date))
         conn.commit()
         conn.close()
         return redirect(url_for("home"))
     
     conn=get_db()
-    transactions=conn.execute("SELECT * FROM transactions WHERE user_id=?",(session["user_id"],)).fetchall()
+    transactions = conn.execute("""
+                                    SELECT 
+                                        transactions.id,
+                                        transactions.amount,
+                                        transactions.type,
+                                        transactions.date,
+                                        categories.name AS category
+                                    FROM transactions
+                                    JOIN categories ON transactions.category_id = categories.id
+                                    WHERE transactions.user_id = ?
+                                    ORDER BY transactions.date DESC
+                                """, (session["user_id"],)).fetchall()
+    categories=conn.execute("SELECT * FROM categories WHERE user_id=?",(session["user_id"],)).fetchall()
+    user=conn.execute("SELECT username FROM users WHERE id=?",(session["user_id"],)).fetchone()
     conn.close()
-    return render_template("index.html",transactions=transactions)
+    return render_template("index.html",transactions=transactions,categories=categories,username=user["username"])
 
 @app.route("/register", methods=["GET","POST"])
 def register():
@@ -110,6 +131,21 @@ def delete_trans(id):
     conn.close()
     return redirect(url_for("home"))
 
+@app.route("/categories",methods=["GET","POST"])
+def categories():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    
+    conn=get_db()
+    if request.method=="POST":
+        name=request.form.get("name")
+
+        conn.execute("INSERT INTO categories (name,user_id) VALUES (?,?)",(name,session["user_id"]))
+        conn.commit()
+
+    categories=conn.execute("SELECT * FROM categories WHERE user_id=?",(session["user_id"],)).fetchall()
+    conn.close()
+    return render_template("categories.html",categories=categories)
 
 if __name__=="__main__":
     app.run(debug=True)

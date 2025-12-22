@@ -9,9 +9,9 @@
     <nav>
         <a href="{{url_for('home')}}">HOME</a>
         {% if session.get('user_id') %}
-        
-            <a href="{{ url_for('logout') }}">Logout</a>
 
+            <a href="{{ url_for('logout') }}">Logout</a>
+            <a href="{{ url_for('categories')}}">Add categories</a>
         {% else %}
 
             <a href="{{ url_for('login') }}">Login</a> |
