@@ -8,6 +8,7 @@ app.secret_key="super-secret-key"
 def get_db():
     conn=sqlite3.connect("money_manager.db")
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
 def init_db():
@@ -16,8 +17,10 @@ def init_db():
                     CREATE TABLE IF NOT EXISTS transactions
                     (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER NOT NULL,
                         amount INTEGER,
-                        type TEXT
+                        type TEXT,
+                        FOREIGN KEY (user_id) REFERENCES users(id)
                     )
                 """)
     conn.execute("""
@@ -25,6 +28,15 @@ def init_db():
                     (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         username TEXT UNIQUE NOT NULL,
+                        password TEXT NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+    conn.execute("""
+                    CREATE TABLE IF NOT EXISTS categories
+                    (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT NOT NULL,
                         password TEXT NOT NULL,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
@@ -41,13 +53,13 @@ def home():
         amount=request.form.get("amount")
         ttype=request.form.get("transaction-type")
         conn=get_db()
-        conn.execute("INSERT INTO transactions (amount,type) VALUES (?,?)",(amount,ttype))
+        conn.execute("INSERT INTO transactions (user_id,amount,type) VALUES (?,?,?)",(session["user_id"],amount,ttype))
         conn.commit()
         conn.close()
         return redirect(url_for("home"))
     
     conn=get_db()
-    transactions=conn.execute("SELECT * FROM transactions").fetchall()
+    transactions=conn.execute("SELECT * FROM transactions WHERE user_id=?",(session["user_id"],)).fetchall()
     conn.close()
     return render_template("index.html",transactions=transactions)
 
@@ -76,12 +88,11 @@ def login():
         password=request.form.get("password")
 
         conn=get_db()
-        conn.execute("SELECT * FROM users WHERE username=?",(username,)).fetchone()
+        user=conn.execute("SELECT * FROM users WHERE username=?",(username,)).fetchone()
         conn.close()
 
-        if username and check_password_hash(username["password"],password):
-            session["user_id"]=username["id"]
-
+        if user and check_password_hash(user["password"],password):
+            session["user_id"]=user["id"]
             return redirect(url_for("home"))
         return "INVALID USERNAME AND PASSWORD"
     return render_template("login.html")
@@ -94,7 +105,7 @@ def logout():
 @app.route("/delete/<int:id>")
 def delete_trans(id):
     conn=get_db()
-    conn.execute("DELETE FROM transactions WHERE id =?",(id,))
+    conn.execute("DELETE FROM transactions WHERE id =? AND user_id=?",(id,session["user_id"]))
     conn.commit()
     conn.close()
     return redirect(url_for("home"))
