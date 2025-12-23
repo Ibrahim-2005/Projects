@@ -19,15 +19,11 @@ A full-stack **expense & income tracking web application** built using Flask, de
 
     * Session-based access control
 
-<br/>
-
 * 👤 User-Specific Data
 
     * Each user sees only their own data
 
     * Protected routes to prevent data leakage
-
-<br/>
 
 * 🗂️ Custom Categories
 
