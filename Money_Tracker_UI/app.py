@@ -2,9 +2,11 @@ from flask import Flask,render_template,request,url_for,redirect,session
 import sqlite3
 from werkzeug.security import generate_password_hash,check_password_hash
 from datetime import date
+import os
+
 
 app=Flask(__name__)
-app.secret_key="super-secret-key"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-key")
 
 def get_db():
     conn=sqlite3.connect("money_manager.db")
