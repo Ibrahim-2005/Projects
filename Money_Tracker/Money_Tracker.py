@@ -23,13 +23,11 @@ class Details:
             ws=wb.active
         ws.append(data)
         wb.save(filename)
-
     def get_date_time(self):
         date=datetime.date.today().strftime("%d/%m/%y")
         day=datetime.datetime.now().strftime("%A")
         time=datetime.datetime.now().strftime("%I:%M %p")
         return date,day,time
-
     def get_amount(self):
         while True:
             raw = input("Enter the transaction's amount: ").replace(',', '').replace('₹', '').strip()
@@ -40,8 +38,6 @@ class Details:
             except ValueError:
                 print("Enter valid amount..")
         return amount
-
-
     def get_income_category(self):
         filename=os.path.join(current_dir,"Income_category.json")
         lines=0
@@ -58,7 +54,6 @@ class Details:
             lines+=1
             for i in range(1,len(categories_list)+1):
                 print(f"{i}.{categories_list[i-1]}")
-            
             while True:
                 cat_number=int(input("Enter the corresponding category number:"))
                 if cat_number == 0:
@@ -85,7 +80,6 @@ class Details:
                     else:
                         print(f"Enter valid number(1,{len(categories_list)})")
                         continue
-
     def get_expense_category(self):
         filename=os.path.join(current_dir,"Expense_category.json")
         lines=0
@@ -128,7 +122,6 @@ class Details:
                     else:
                         print(f"Enter valid number(1,{len(categories_list)})")
                         continue
-
     def get_account(self):
         filename=os.path.join(current_dir,"Accounts.json")
         lines=0
@@ -176,12 +169,10 @@ class Details:
     def get_notes(self):
         notes=input("Wanna have any note for this transaction:").title()
         return notes
-    
     def get_transfer_accounts(self):
         filename = p("Accounts.json")
         data = safe_load_json(filename, {"accounts": {}})
         accounts = data.get("accounts", {})
-
         count, acc_map = 1, {}
         for type_acc, acc_name in accounts.items():
             print(f"{type_acc}:")
@@ -189,12 +180,10 @@ class Details:
                 print(f"  {count}. {acc} : {bal}")
                 acc_map[count] = (type_acc, acc)
                 count += 1
-
         max_idx = len(acc_map)
         if max_idx < 2:
             print("Need at least two accounts to transfer.")
             return None
-
         while True:
             opt_from = input(f"\nEnter FROM index (or 'q' to cancel): ").strip().lower()
             if opt_from == 'q':
@@ -216,7 +205,6 @@ class Details:
                 return type_from, acc_from, type_to, acc_to
             except ValueError:
                 print("Enter valid integer.")
-
     def get_and_transfer_balances(self,amount,type_from,acc_from,type_to,acc_to):
         filename=os.path.join(current_dir,"Accounts.json")
         with open(filename,'r',encoding='utf-8') as f:
@@ -229,7 +217,6 @@ class Details:
         else:
             accounts[type_from][acc_from]-=amount
             accounts[type_to][acc_to]+=amount
-
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump({"accounts": accounts}, f, indent=4)
         return True
@@ -257,7 +244,6 @@ def add_income_category(lines):
         categories=data.get("categories",{})
     else:
         categories={}
-
     while True:
         maincat=input("Enter the category name (or type 'n' to exit the option):").title()
         lines+=1
@@ -277,7 +263,6 @@ def add_income_category(lines):
                     existing_subs.append(s)
         else:
             categories[maincat]=subcats
-    
     with open(filename,'w',encoding='utf-8') as f:
         json.dump({"categories":categories},f,indent=4)
     print("Categories added successfully..")
@@ -292,7 +277,6 @@ def add_expense_category(lines):
         categories=data.get("categories",{})
     else:
         categories={}
-
     while True:
         maincat=input("Enter the category name (or type 'n' to exit the option):").title()
         lines+=1
@@ -312,7 +296,6 @@ def add_expense_category(lines):
                     existing_subs.append(s)
         else:
             categories[maincat]=subcats
-    
     with open(filename,'w',encoding='utf-8') as f:
         json.dump({"categories":categories},f,indent=4)
     print("Categories added successfully..")
@@ -320,23 +303,18 @@ def add_expense_category(lines):
     clear_lines(lines)
 
 def add_account(lines):
-    filename = p("Accounts.json")
-    data = safe_load_json(filename, {"accounts": {}})
-    accounts = data.get("accounts", {})
-    
-    # if os.path.exists(filename):
-    #     with open(filename,'r',encoding='utf-8') as f:
-    #         data=json.load(f)
-    #         accounts=data.get("accounts",{})
-    # else:
-    #     accounts={}
-
+    filename=os.path.join(current_dir,"Accounts.json")
+    if os.path.exists(filename) and os.path.getsize(filename)>0:
+        with open(filename,'r',encoding='utf-8') as f:
+            data=json.load(f)
+        accounts=data.get("accounts",{})
+    else:
+        accounts={}
     while True:
         type_account=input(f"Enter the type of account (or type 'n' to exit the option):").title()
         lines+=1
         if type_account.lower()=='n':
             break
-
         account_dict = {}
         while True:
             account_name=input(f"Enter the name of account for {type_account} (or type 'n' to exit the option):").title()
@@ -353,25 +331,21 @@ def add_account(lines):
                 except ValueError:
                     print("Please enter a valid number.")
                     lines+=1
-            
             account_dict[account_name] = balance
-
-        # Update accounts data
         if type_account in accounts:
             accounts[type_account].update(account_dict)
         else:
             accounts[type_account] = account_dict
-
-        # Save the updated accounts data
-    safe_dump_json(filename, {"accounts": accounts})
+    with open(filename,'w',encoding='utf-8') as f:
+        json.dump({"accounts":accounts},f,indent=4)
+    lines+=1
     clear_lines(lines)
 
 def clear_lines(n):
-    if os.name != 'nt':
-        for _ in range(n):
-            sys.stdout.write("\x1b[1A")
-            sys.stdout.write("\x1b[2K")
-        sys.stdout.flush()
+    for _ in range(n):
+        sys.stdout.write("\x1b[1A")
+        sys.stdout.write("\x1b[2K")
+    sys.stdout.flush()
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -402,9 +376,7 @@ def add_income():
     type_acc, account = income.get_account()
     account_value=f"{type_acc} : {account}"
     notes = income.get_notes()
-
     update_account_balance(type_acc, account, amount)
-
     income.write_in_excel(date, day, time, amount, type_of_transaction, category, account_value, notes)
 
 def add_expense():
@@ -415,11 +387,7 @@ def add_expense():
     category = expense.get_expense_category()
     while True:
         type_acc, account = expense.get_account()
-        
-
-        # Try to deduct balance
         success = update_account_balance(type_acc, account, -amount)
-
         if success:
             account_value=f"{type_acc} : {account}"
             notes = expense.get_notes()
@@ -440,9 +408,7 @@ def transfer_between_accounts():
     category="Transfer between accounts"
     while True:
         type_from,acc_from,type_to,acc_to=transfer.get_transfer_accounts()
-        
         success = transfer.get_and_transfer_balances(amount,type_from,acc_from,type_to,acc_to)
-
         if success:
             account_value=f"From {acc_from} - To {acc_to}"
             notes = transfer.get_notes()
@@ -468,19 +434,15 @@ def view_summary():
     if df.empty:
         print("No transaction rows yet.")
         return
-
     print("\n==================== SUMMARY ====================\n")
-
     total_income = df.loc[df["Type"] == "Income", "Amount"].sum()
     total_expense = abs(df.loc[df["Type"] == "Expense", "Amount"].sum())
     net_savings = total_income - total_expense
-
     print("OVERALL SUMMARY")
     print(f" Total Income  = ₹{total_income:,.0f}")
     print(f" Total Expense = ₹{total_expense:,.0f}")
     print(f" Net Savings   = ₹{net_savings:,.0f}\n")
     print("-" * 55)
-
     if os.path.exists(accounts_path):
         with open(accounts_path, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -493,7 +455,6 @@ def view_summary():
         print("No account data available.")
     print()
     print("-" * 55)
-
     expense_df = df[df["Type"] == "Expense"]
     if not expense_df.empty:
         print("CATEGORY-WISE SPENDING")
@@ -503,29 +464,20 @@ def view_summary():
     else:
         print("No expense transactions found.")
     print("-" * 55)
-
-    # 4️⃣ Monthly Summary (Income vs Expense per month)
     print("MONTHLY SUMMARY")
     df["Month-Year"] = pd.to_datetime(df["Date"], format="%d/%m/%y", errors='coerce').dt.strftime("%B %Y")
     monthly_summary = df.groupby(["Month-Year", "Type"])["Amount"].sum().unstack(fill_value=0)
     for month, row in monthly_summary.iterrows():
         inc = row.get("Income", 0)
         exp = abs(row.get("Expense", 0))
-        print(f"📅 {month} → Income: ₹{inc:,.0f}, Expense: ₹{exp:,.0f}")
+        print(f"{month} → Income: ₹{inc:,.0f}, Expense: ₹{exp:,.0f}")
     print("-" * 55)
-
-    # 5️⃣ Recent Transactions
     print("RECENT TRANSACTIONS (Last 5)\n")
     recent = df.tail(5)[["Date", "Type", "Amount", "Account", "Category"]]
-
-    # Print header
     print(f"{'Date':<10} | {'Type':<10} | {'Amount':>9} | {'Account':<43} | {'Category'}")
     print("-" * 100)
-
-    # Print rows neatly aligned
     for _, row in recent.iterrows():
         print(f"{row['Date']:<10} | {row['Type']:<10} | ₹{row['Amount']:>8,.0f} | {row['Account']:<43} | {row['Category']}")
-
     print("-" * 100)
 
 def main():

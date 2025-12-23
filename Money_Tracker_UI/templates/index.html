@@ -6,12 +6,12 @@
     <h1>MONEY MANAGER</h1>
     <h4>Welcome {{username}}</h4>
     <form method="POST">
-        <input type="date" name="date"><br>
-        <input type="number" name="amount" placeholder="AMOUNT"><br>
+        <input type="date" name="date"> 
+        <input type="number" name="amount" placeholder="AMOUNT"> 
         <select name="transaction-type" required>
             <option value="income">INCOME</option>
             <option value="expense">EXPENSE</option>
-        </select><br>
+        </select> 
         <select name="category_id" required onchange="if (this.value==='add') window.location.href='{{ url_for('categories')}}'">
             <option value="">Select Category</option>
             <option value="add">➕ Add new category</option>
@@ -21,6 +21,7 @@
         </select>
         <button type="submit">SUBMIT</button>
     </form>
+    
     <h2>TRANSACTIONS</h2>
     <ul>
         {%if transactions %}
