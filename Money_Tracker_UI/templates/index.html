@@ -4,10 +4,10 @@
 
     {% block content %}
     <h1>MONEY MANAGER</h1>
-    <h4>Welcome {{username}}</h4>
+    <h4>Welcome <span style="text-transform: uppercase;">{{username}}</span></h4>
     <form method="POST">
         <input type="date" name="date"> 
-        <input type="number" name="amount" placeholder="AMOUNT"> 
+        <input type="number" name="amount" placeholder="AMOUNT" required> 
         <select name="transaction-type" required>
             <option value="income">INCOME</option>
             <option value="expense">EXPENSE</option>
@@ -28,7 +28,10 @@
         <p>AMOUNT   |   TYPE    |   CATEGORY</p>
         {% for t in transactions %}
             <li>
-                {{ t["date"] }} - {{ t["amount"] }} - {{ t["type"] }} ({{ t["category"] }})
+                <span class="transaction-text">
+                    {{ t["date"] }} — ₹{{ t["amount"] }} — {{ t["type"] }} ({{ t["category"] }})
+                </span>
+                <a href="{{ url_for('delete_trans', id=t['id']) }}" class="delete-link">❌</a>
             </li>
         {% endfor %}
         {% else %}
@@ -37,7 +40,7 @@
     </ul>
 
     <h3>SUMMARY</h3>
-    <ul>
+    <ul class="summary">
         <li><strong>Total Income:</strong> ₹{{ income }}</li>
         <li><strong>Total Expense:</strong> ₹{{ expense }}</li>
         <li><strong>Balance:</strong> ₹{{ bal }}</li>
