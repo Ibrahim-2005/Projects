@@ -55,8 +55,12 @@ def home():
         return redirect(url_for("login"))
     if request.method=="POST":
         amount=request.form.get("amount")
+        if not amount or amount<=0:
+            return "Amount must be greater than 0 and not null"
         ttype=request.form.get("transaction-type")
         category_id=request.form.get("category_id")
+        if not category_id or ttype:
+            return "Invalid transaction data"
         selected_date=request.form.get("date")
         if not selected_date:
             selected_date = date.today().isoformat()
@@ -81,8 +85,31 @@ def home():
                                 """, (session["user_id"],)).fetchall()
     categories=conn.execute("SELECT * FROM categories WHERE user_id=?",(session["user_id"],)).fetchall()
     user=conn.execute("SELECT username FROM users WHERE id=?",(session["user_id"],)).fetchone()
+    if not user:
+        conn.close()
+        session.pop("user_id", None)
+        return redirect(url_for("login"))
+    income_row = conn.execute(
+                                """
+                                SELECT SUM(amount) AS total_income
+                                FROM transactions
+                                WHERE user_id = ? AND type = 'income'
+                                """,
+                                (session["user_id"],)
+                            ).fetchone()
+    total_income=income_row["total_income"] or 0
+    expense_row = conn.execute(
+                                """
+                                SELECT SUM(amount) AS total_expense
+                                FROM transactions
+                                WHERE user_id = ? AND type = 'expense'
+                                """,
+                                (session["user_id"],)
+                            ).fetchone()
+    total_expense=expense_row["total_expense"] or 0
+    balance=total_income-total_expense
     conn.close()
-    return render_template("index.html",transactions=transactions,categories=categories,username=user["username"])
+    return render_template("index.html",transactions=transactions,categories=categories,username=user["username"],income=total_income,expense=total_expense,bal=balance)
 
 @app.route("/register", methods=["GET","POST"])
 def register():
@@ -146,6 +173,11 @@ def categories():
     categories=conn.execute("SELECT * FROM categories WHERE user_id=?",(session["user_id"],)).fetchall()
     conn.close()
     return render_template("categories.html",categories=categories)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return "Page not found", 404
+
 
 if __name__=="__main__":
     app.run(debug=True)

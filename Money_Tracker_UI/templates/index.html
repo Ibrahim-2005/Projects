@@ -6,11 +6,11 @@
     <h1>MONEY MANAGER</h1>
     <h4>Welcome {{username}}</h4>
     <form method="POST">
-        <input type="date" name="date"></form><br>
+        <input type="date" name="date"><br>
         <input type="number" name="amount" placeholder="AMOUNT"><br>
         <select name="transaction-type" required>
-            <option value="Income">INCOME</option>
-            <option value="Expense">EXPENSE</option>
+            <option value="income">INCOME</option>
+            <option value="expense">EXPENSE</option>
         </select><br>
         <select name="category_id" required onchange="if (this.value==='add') window.location.href='{{ url_for('categories')}}'">
             <option value="">Select Category</option>
@@ -18,8 +18,8 @@
             {% for c in categories %}
             <option value="{{ c['id'] }}">{{ c['name'] }}</option>
             {% endfor %}
-        </select><br>
-        <button name="submit">SUBMIT</button>
+        </select>
+        <button type="submit">SUBMIT</button>
     </form>
     <h2>TRANSACTIONS</h2>
     <ul>
@@ -35,6 +35,11 @@
         {% endif %}
     </ul>
 
-
+    <h3>SUMMARY</h3>
+    <ul>
+        <li><strong>Total Income:</strong> ₹{{ income }}</li>
+        <li><strong>Total Expense:</strong> ₹{{ expense }}</li>
+        <li><strong>Balance:</strong> ₹{{ bal }}</li>
+    </ul>
 
     {% endblock %}
