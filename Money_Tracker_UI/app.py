@@ -166,7 +166,8 @@ def categories():
     conn=get_db()
     if request.method=="POST":
         name=request.form.get("name")
-
+        if not name:
+            return "Category name required"
         conn.execute("INSERT INTO categories (name,user_id) VALUES (?,?)",(name,session["user_id"]))
         conn.commit()
 
